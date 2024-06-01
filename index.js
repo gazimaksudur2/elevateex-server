@@ -36,6 +36,10 @@ async function run() {
         app.get('/',(req, res)=>{
             res.send("ElevateEx is running on its way!!");
         })
+
+        app.get('/demo',(req, res)=>{
+            res.send("ElevateEx is running on demo!!");
+        })
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
