@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 const app = express();
@@ -44,7 +44,7 @@ async function run() {
         const sponsorCollection = client.db('elevateExDB').collection('sponsors');
         const popularCollection = client.db('elevateExDB').collection('popular_courses');
         const classesCollection = client.db('elevateExDB').collection('allClasses');
-        // const userCollection = client.db('elevateExDB').collection('usersCollection');
+        const enrolledCollection = client.db('elevateExDB').collection('enrolled');
         // const userCollection = client.db('elevateExDB').collection('usersCollection');
         // const userCollection = client.db('elevateExDB').collection('usersCollection');
 
@@ -150,6 +150,33 @@ async function run() {
             } else {
                 result = await popularCollection.find().toArray();
             }
+            res.send(result);
+        });
+
+        app.post('/enroll', async (req, res) => {
+            const data = req.body;
+            // console.log(data);
+            const result = await enrolledCollection.insertOne(data);
+            res.send(result);
+        })
+        app.get('/enroll', async (req, res) => {
+            const query = req.query;
+            // console.log(query);
+            let result;
+            if (query) {
+                if (query._id) {
+                    // const _id = new ObjectId(query._id);
+                    // console.log(_id);
+                    const myQuery = {student_id: query._id};
+                    // console.log(myQuery);
+                    result = await enrolledCollection.find(myQuery).toArray();
+                } else {
+                    result = await enrolledCollection.find(query).toArray();
+                }
+            } else {
+                result = await enrolledCollection.find().toArray();
+            }
+            // console.log(result)
             res.send(result);
         });
     } finally {
