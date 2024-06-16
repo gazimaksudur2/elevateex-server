@@ -45,7 +45,7 @@ async function run() {
         const popularCollection = client.db('elevateExDB').collection('popular_courses');
         const classesCollection = client.db('elevateExDB').collection('allClasses');
         const enrolledCollection = client.db('elevateExDB').collection('enrolled');
-        // const userCollection = client.db('elevateExDB').collection('usersCollection');
+        const insReqCollection = client.db('elevateExDB').collection('instructorReqs');
         // const userCollection = client.db('elevateExDB').collection('usersCollection');
 
         app.post('/jwt', (req, res) => {
@@ -138,10 +138,11 @@ async function run() {
                 if (query._id) {
                     // const _id = new ObjectId(query._id);
                     // console.log(_id);
-                    const myQuery = {_id: new ObjectId(query._id)};
+                    const myQuery = { _id: new ObjectId(query._id) };
                     // console.log(myQuery);
                     result = await classesCollection.find(myQuery).toArray();
                 } else {
+                    // console.log(query)
                     result = await classesCollection.find(query).toArray();
                 }
             } else {
@@ -175,7 +176,7 @@ async function run() {
                 if (query._id) {
                     // const _id = new ObjectId(query._id);
                     // console.log(_id);
-                    const myQuery = {student_id: query._id};
+                    const myQuery = { student_id: query._id };
                     // console.log(myQuery);
                     result = await enrolledCollection.find(myQuery).toArray();
                 } else {
@@ -195,14 +196,47 @@ async function run() {
             //     }
             //     func(resu?.course_id);
             // })
-            for(let val of result){
+            for (let val of result) {
                 // console.log(val);
-                const course = await classesCollection.find({_id: new ObjectId(val?.course_id)}).toArray();
+                const course = await classesCollection.find({ _id: new ObjectId(val?.course_id) }).toArray();
                 courses.push(course);
             }
             // console.log(courses)
             res.send(courses);
         });
+
+        app.post('/instructors', async (req, res) => {
+            const request = req.body;
+            // console.log(request);
+            const query = { email: req.body?.email };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    instructor_status: 'pending',
+                }
+            }
+            const userInfo = await userCollection.find(query).toArray();
+            const instructorInfo = {
+                first_name: request.first_name,
+                last_name: request.last_name,
+                email: request.email,
+                category: request.category,
+                experience: request.experience,
+                requestedAt: request.requestedAt,
+                photoURL: userInfo[0].photoURL,
+                cur_role: userInfo[0].role,
+            }
+            console.log(userInfo[0].photoURL)
+            const result2 = await userCollection.updateOne(query, updatedDoc, options);
+            const result = await insReqCollection.insertOne(instructorInfo);
+            res.send([result, result2]);
+        });
+
+        app.get('/instructors', async (req, res) => {
+            const result = await insReqCollection.find().toArray();
+            res.send(result);
+        });
+
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
@@ -215,4 +249,4 @@ app.listen(port, () => {
     console.log(`elevateEx is running on port: ${port}`);
 });
 
-//vercel server is crashing
+//vercel server is crashing hello hi
