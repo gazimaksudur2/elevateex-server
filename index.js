@@ -237,6 +237,63 @@ async function run() {
             res.send(result);
         });
 
+        app.post('/instructors/approve', async(req, res)=>{
+            const query = req.body;
+            const updatedDoc = {
+                $set:{
+                    instructor_status: 'approved',
+                    role: 'instructor',
+                }
+            };
+            const options = {upsert: true};
+            const result = await userCollection.updateOne(query, updatedDoc, options);
+            const result2 = await insReqCollection.deleteOne(query);
+            res.send([result, result2]);
+            // res.send("succedded");
+        });
+        app.post('/instructors/cancel', async(req, res)=>{
+            const query = req.body;
+            const updatedDoc = {
+                $set:{
+                    instructor_status: 'cancelled',
+                }
+            };
+            const options = {upsert: true};
+            const result = await userCollection.updateOne(query, updatedDoc, options);
+            const result2 = await insReqCollection.deleteOne(query);
+            res.send([result, result2]);
+            // res.send("succedded");
+        });
+
+        app.post('/admin/approve', async(req, res)=>{
+            const query = req.body;
+            const updatedDoc = {
+                $set:{
+                    admin_status: 'approved',
+                    role: 'admin',
+                }
+            };
+            const options = {upsert: true};
+            const result = await userCollection.updateOne(query, updatedDoc, options);
+            // const result2 = await insReqCollection.deleteOne(query);
+            res.send(result);
+            // res.send("succedded");
+        });
+        app.post('/admin/cancel', async(req, res)=>{
+            const query = req.body;
+            const updatedDoc = {
+                $set:{
+                    admin_status: 'cancelled',
+                }
+            };
+            const options = {upsert: true};
+            const result = await userCollection.updateOne(query, updatedDoc, options);
+            // const result2 = await insReqCollection.deleteOne(query);
+            res.send(result);
+            // res.send("succedded");
+        });
+
+
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
