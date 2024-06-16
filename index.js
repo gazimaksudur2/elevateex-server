@@ -135,7 +135,15 @@ async function run() {
             // console.log(query);
             let result;
             if (query) {
-                result = await classesCollection.find(query).toArray();
+                if (query._id) {
+                    // const _id = new ObjectId(query._id);
+                    // console.log(_id);
+                    const myQuery = {_id: new ObjectId(query._id)};
+                    // console.log(myQuery);
+                    result = await classesCollection.find(myQuery).toArray();
+                } else {
+                    result = await classesCollection.find(query).toArray();
+                }
             } else {
                 result = await classesCollection.find().toArray();
             }
@@ -176,8 +184,24 @@ async function run() {
             } else {
                 result = await enrolledCollection.find().toArray();
             }
-            // console.log(result)
-            res.send(result);
+            let courses = [];
+            // await result.map((resu)=>{
+            //     // console.log({_id: new ObjectId(resu?.course_id)});
+            //     const func = async(id)=>{
+            //         let course = await classesCollection.find({_id: new ObjectId(id)}).toArray();
+            //         // console.log(course);
+            //         await courses.push(course);
+            //         // return course;
+            //     }
+            //     func(resu?.course_id);
+            // })
+            for(let val of result){
+                // console.log(val);
+                const course = await classesCollection.find({_id: new ObjectId(val?.course_id)}).toArray();
+                courses.push(course);
+            }
+            // console.log(courses)
+            res.send(courses);
         });
     } finally {
         // Ensures that the client will close when you finish/error
