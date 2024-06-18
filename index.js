@@ -46,7 +46,7 @@ async function run() {
         const classesCollection = client.db('elevateExDB').collection('allClasses');
         const enrolledCollection = client.db('elevateExDB').collection('enrolled');
         const insReqCollection = client.db('elevateExDB').collection('instructorReqs');
-        // const userCollection = client.db('elevateExDB').collection('usersCollection');
+        const assignmentCollection = client.db('elevateExDB').collection('assignments');
 
         app.post('/jwt', (req, res) => {
             const user = req.body;
@@ -92,6 +92,24 @@ async function run() {
             res.send(result);
         })
 
+        app.patch('/users', async (req, res) => {
+            const userData = req.body;
+            // console.log(userData);
+            const filter = req.query;
+            // console.log(userData, filter);
+            const updatedDoc = {
+                $set:{
+                    admin_status: userData.admin_status,
+                    admin_req_msg: userData.admin_req_msg,
+                }
+            }
+            const options = {
+                upsert: true,
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
         app.get('/demo', (req, res) => {
             res.send("ElevateEx is running on demo!!");
         });
@@ -130,6 +148,14 @@ async function run() {
             }
             res.send(result);
         });
+
+        app.post('/reviews', async (req, res) => {
+            const user = req.body;
+            // console.log(user);
+            const result = await reviewCollection.insertOne(user);
+            res.send(result);
+        })
+
         app.get('/allclasses', async (req, res) => {
             const query = req.query;
             // console.log(query);
@@ -215,7 +241,7 @@ async function run() {
                     instructor_status: 'pending',
                 }
             }
-            const userInfo = await userCollection.find(query).toArray();
+            // const userInfo = await userCollection.find(query).toArray();
             const instructorInfo = {
                 first_name: request.first_name,
                 last_name: request.last_name,
@@ -223,10 +249,10 @@ async function run() {
                 category: request.category,
                 experience: request.experience,
                 requestedAt: request.requestedAt,
-                photoURL: userInfo[0].photoURL,
-                cur_role: userInfo[0].role,
+                photoURL: request.photoURL,
+                cur_role: request.role,
             }
-            console.log(userInfo[0].photoURL)
+            // console.log(userInfo[0].photoURL)
             const result2 = await userCollection.updateOne(query, updatedDoc, options);
             const result = await insReqCollection.insertOne(instructorInfo);
             res.send([result, result2]);
