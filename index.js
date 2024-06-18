@@ -47,6 +47,7 @@ async function run() {
         const enrolledCollection = client.db('elevateExDB').collection('enrolled');
         const insReqCollection = client.db('elevateExDB').collection('instructorReqs');
         const assignmentCollection = client.db('elevateExDB').collection('assignments');
+        const assignmentSubmissionCollection = client.db('elevateExDB').collection('assignmentSubmission');
 
         app.post('/jwt', (req, res) => {
             const user = req.body;
@@ -317,6 +318,37 @@ async function run() {
             // const result2 = await insReqCollection.deleteOne(query);
             res.send(result);
             // res.send("succedded");
+        });
+
+        app.get('/assignments', async (req, res) => {
+            const query = req.query;
+            // console.log(query);
+            let result;
+            if (query) {
+                result = await assignmentCollection.find(query).toArray();
+            } else {
+                result = await assignmentCollection.find().toArray();
+            }
+            res.send(result);
+        });
+
+        app.post('/assignments', async (req, res) => {
+            const user = req.body;
+            // console.log(user);
+            const result = await assignmentCollection.insertOne(user);
+            res.send(result);
+        });
+
+        app.get('/assignmentsub', async (req, res) => {
+            const query = req.query;
+            // console.log(query);
+            let result;
+            if (query) {
+                result = await assignmentSubmissionCollection.find(query).toArray();
+            } else {
+                result = await assignmentSubmissionCollection.find().toArray();
+            }
+            res.send(result);
         });
 
 
