@@ -39,7 +39,7 @@ async function run() {
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
         const userCollection = client.db('elevateExDB').collection('users');
-        const courseCollection = client.db('elevateExDB').collection('courseColl');
+        // const courseCollection = client.db('elevateExDB').collection('courseColl');
         const reviewCollection = client.db('elevateExDB').collection('reviews');
         const sponsorCollection = client.db('elevateExDB').collection('sponsors');
         const popularCollection = client.db('elevateExDB').collection('popular_courses');
@@ -177,6 +177,41 @@ async function run() {
             }
             res.send(result);
         });
+
+        app.post('/allclasses', async (req, res) => {
+            const user = req.body;
+            // console.log(user);
+            const result = await classesCollection.insertOne(user);
+            res.send(result);
+        });
+
+        app.post('/allclasses/approve', async(req, res)=>{
+            const query = {_id: new ObjectId(req.body._id)};
+            const updatedDoc = {
+                $set:{
+                    course_status: 'approved',
+                }
+            };
+            const options = {upsert: true};
+            // console.log(query, updatedDoc, options);
+            const result = await classesCollection.updateOne(query, updatedDoc, options);
+            res.send(result);
+            // res.send("succedded");
+        });
+        app.post('/allclasses/cancel', async(req, res)=>{
+            const query = {_id: new ObjectId(req.body._id)};
+            const updatedDoc = {
+                $set:{
+                    course_status: 'cancelled',
+                }
+            };
+            const options = {upsert: true};
+            const result = await classesCollection.updateOne(query, updatedDoc, options);
+            res.send(result);
+            // res.send("succedded");
+        });
+
+
         app.get('/popular', async (req, res) => {
             const query = req.query;
             // console.log(query);
