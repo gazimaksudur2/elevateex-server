@@ -374,6 +374,56 @@ async function run() {
             res.send(result);
         });
 
+        app.patch('/assignments/submit', async(req, res)=>{
+            const body = req.body;
+            const query = {_id: new ObjectId(req.query._id)};
+            const findOptions = {
+                projection: { _id: 0, submittedBy: 1 }
+            }
+            const peopleEmail = await assignmentCollection.findOne(query, findOptions);
+            const submittedBy = peopleEmail.submittedBy;
+            let result;
+            if(submittedBy.includes(body.email)){
+                result = { message: 'Already exists Your submission' };
+            }else{
+                submittedBy.push(body.email);
+                const updatedDoc = {
+                    $set:{
+                        submittedBy,
+                        submissionCount: submittedBy?.length,
+                    }
+                };
+                const options = {upsert: true};
+                result = await assignmentCollection.updateOne(query, updatedDoc, options);
+            }
+            res.send(result);
+        });
+        app.patch('/assignments/unsubmit', async(req, res)=>{
+            const body = req.body;
+            const query = {_id: new ObjectId(req.query._id)};
+            const findOptions = {
+                projection: { _id: 0, submittedBy: 1 }
+            }
+            const peopleEmail = await assignmentCollection.findOne(query, findOptions);
+            const submittedBy = peopleEmail.submittedBy;
+            let result;
+            if(!submittedBy.includes(body.email)){
+                result = { message: "You didn't submitted yet!!" };
+            }else{
+                // submittedBy.push(body.email);
+                const newSubmittedBy = submittedBy.filter(people=>people!=body.email);
+                const updatedDoc = {
+                    $set:{
+                        submittedBy: newSubmittedBy,
+                        submissionCount: newSubmittedBy?.length,
+                    }
+                };
+                const options = {upsert: true};
+                result = await assignmentCollection.updateOne(query, updatedDoc, options);
+            }
+            res.send(result);
+        });
+
         app.get('/assignmentsub', async (req, res) => {
             const query = req.query;
             // console.log(query);
